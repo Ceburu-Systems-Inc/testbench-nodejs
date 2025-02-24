@@ -9,8 +9,18 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "description": "",
   "dependencies": {
-    "express": "^4.21.2"
-  }
+    "axios": "^1.7.9",
+    "express": "^4.21.2",
+    "sqlite3": "^5.1.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vniharika-ceburu/testbench.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vniharika-ceburu/testbench/issues"
+  },
+  "homepage": "https://github.com/vniharika-ceburu/testbench#readme",
+  "description": ""
 }
