@@ -1,7 +1,7 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const axios = require('axios');
-const app = express();
+const app = express(); 
 const port = 3000;
 app.use(express.json());
 
@@ -19,16 +19,22 @@ app.get('/delay', (req, res) => {
     }, delay);
 });
 
+
 // Error simulation
 app.get('/error', (req, res) => {
-    const type = req.query.type;
-    if (type === 'fatal') {
-        throw new Error('Fatal error occurred');
-    } else if (type === 'handled') {
-        return res.status(400).json({ error: 'Handled error', message: 'This is a handled error' });
+    try {
+        const type = req.query.type;
+        if (type === 'fatal') {
+            throw new Error('Fatal error occurred');
+        } else if (type === 'handled') {
+            return res.status(400).json({ error: 'Handled error', message: 'This is a handled error' });
+        }
+        res.json({ message: 'No error triggered' });
+    } catch (err) {
+        res.status(500).json({ error: 'Unhandled error', message: err.message });
     }
-    res.json({ message: 'No error triggered' });
 });
+
 
 // CRUD simulation based on operation string
 app.post('/crud', (req, res) => {
