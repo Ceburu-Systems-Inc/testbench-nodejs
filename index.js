@@ -194,17 +194,44 @@ const getInstanceUrl = (id) => `${instanceBaseUrl}${id === 0 ? '' : `-${id}`}:${
 
 // Cascading chaining simulation
 // When a request comes to /chain?seq=3214, each instance will call the next one in the sequence
-// E.g., instance-3 will call instance-2, which will call instance-1, which will call instance-4
+// E.g., a request with seq=3124 will:
+// 1. First call instance-3 
+// 2. Instance-3 will call instance-1 with seq=124
+// 3. Instance-1 will call instance-2 with seq=24
+// 4. Instance-2 will call instance-4 with seq=4
 app.get('/chain', async (req, res) => {
-    const fullSequence = req.query.seq ? req.query.seq.split('').map(i => parseInt(i)) : [1, 2, 3, 4];
+    const originalSequence = req.query.seq || '1234';
+    const fullSequence = originalSequence.split('').map(i => parseInt(i));
     const timestamp = Date.now();
     const traceId = req.query.traceId || `trace-${timestamp}-${Math.random().toString(36).substring(2, 15)}`;
     
-    console.log(`[Instance ${instanceId}] Received chain request with sequence: ${fullSequence.join('')}, traceId: ${traceId}`);
+    console.log(`[Instance ${instanceId}] Received chain request with sequence: ${originalSequence}, traceId: ${traceId}`);
     
-    // Get the remaining sequence after this instance
-    const currentIndex = fullSequence.findIndex(id => id === instanceId);
-    const remainingSequence = currentIndex >= 0 ? fullSequence.slice(currentIndex + 1) : [];
+    // Check if this request should be routed to a different instance first
+    const firstInstanceInSeq = fullSequence[0];
+    if (firstInstanceInSeq !== instanceId && fullSequence.length > 1) {
+        // This request came to the wrong instance first
+        // Forward it to the correct first instance in the sequence
+        const firstInstanceUrl = getInstanceUrl(firstInstanceInSeq);
+        console.log(`[Instance ${instanceId}] Request should go to instance ${firstInstanceInSeq} first, forwarding...`);
+        
+        try {
+            const forwardUrl = `${firstInstanceUrl}/chain?seq=${originalSequence}&traceId=${traceId}`;
+            const response = await axios.get(forwardUrl, { timeout: 10000 });
+            return res.json(response.data);
+        } catch (err) {
+            console.error(`[Instance ${instanceId}] Error forwarding to first instance ${firstInstanceInSeq}:`, err.message);
+            return res.status(500).json({
+                error: `Failed to forward to instance ${firstInstanceInSeq}`,
+                errorMessage: err.message,
+                originalSequence,
+                traceId
+            });
+        }
+    }
+    
+    // Process this instance's part of the sequence
+    const processingTime = Math.floor(Math.random() * 100);
     
     // This service's response data
     const responseData = {
@@ -212,12 +239,13 @@ app.get('/chain', async (req, res) => {
         timestamp: Date.now(),
         traceId,
         message: `Instance ${instanceId} processing request`,
-        sequence: fullSequence.join(''),
-        chainPosition: currentIndex,
-        remainingChain: remainingSequence,
-        processingTime: Math.floor(Math.random() * 100),
+        originalSequence,
+        processingTime,
         childResponses: []
     };
+    
+    // Calculate the remaining sequence after removing this instance
+    const remainingSequence = fullSequence.slice(1);
     
     // If this is the last instance in the sequence, just return dummy data
     if (remainingSequence.length === 0) {
@@ -225,19 +253,20 @@ app.get('/chain', async (req, res) => {
         responseData.message = `Instance ${instanceId} is the final node in the chain`;
         responseData.finalResult = {
             status: "completed",
-            data: `Processed data from chain ${fullSequence.join('')}`,
+            data: `Processed data from chain ${originalSequence}`,
             randomValue: Math.random()
         };
         return res.json(responseData);
     }
     
-    // Otherwise, call the next service in the chain
+    // Otherwise, call the next service in the chain with the remaining sequence
     const nextInstanceId = remainingSequence[0];
     const nextInstanceUrl = getInstanceUrl(nextInstanceId);
+    const remainingSeqString = remainingSequence.join('');
     
     try {
-        console.log(`[Instance ${instanceId}] Calling next instance: ${nextInstanceUrl}`);
-        const nextServiceUrl = `${nextInstanceUrl}/chain?seq=${fullSequence.join('')}&traceId=${traceId}`;
+        console.log(`[Instance ${instanceId}] Calling next instance ${nextInstanceId} with remaining sequence: ${remainingSeqString}`);
+        const nextServiceUrl = `${nextInstanceUrl}/chain?seq=${remainingSeqString}&traceId=${traceId}`;
         
         const resp = await axios.get(nextServiceUrl, { timeout: 10000 });
         responseData.childResponses.push(resp.data);
