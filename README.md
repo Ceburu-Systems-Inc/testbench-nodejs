@@ -1,6 +1,6 @@
 # NodeJS API Testbench
 
-A simple NodeJS service designed to be deployed as multiple instances in Docker containers for testing API call chaining, load testing, and monitoring with Elasticsearch.
+A simple NodeJS service designed to be deployed as multiple instances in Docker containers for generating APM monitoring data.
 
 ## Available Endpoints
 
@@ -9,7 +9,6 @@ A simple NodeJS service designed to be deployed as multiple instances in Docker 
 - **`/crud`** - `{operation:(crud)}` - Execute CRUD operations on in-memory database
 - **`/status?code=200`** - Return a response with the specified status code
 - **`/chain?seq=3214`** - Execute a chain of API calls across multiple service instances
-- **`/chainapi`** - Advanced API call chaining with flexible configuration
 
 ## Docker Deployment
 
@@ -51,6 +50,3 @@ Each instance is accessible via the Docker network:
 - Within the Docker network: http://instance-1:3000, http://instance-2:3000, etc.
 - From the host machine: http://localhost:3001, http://localhost:3002, etc.
 
-## Elasticsearch Integration
-
-The application uses Elastic APM for performance monitoring and tracking. All API calls are automatically tracked and reported to the configured Elasticsearch instance.
