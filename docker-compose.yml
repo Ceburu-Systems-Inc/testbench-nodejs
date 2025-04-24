@@ -1,0 +1,110 @@
+version: '3'
+
+services:
+  instance-1:
+    build: .
+    container_name: instance-1
+    environment:
+      # Instance configuration
+      - INSTANCE_ID=1
+      - INSTANCE_NAME=instance
+      - INSTANCE_BASE_URL=http://instance
+      - INSTANCE_PORT=3000
+      # Elasticsearch APM configuration
+      - APM_SERVICE_NAME=nodejs-testbench-1
+      - APM_SERVER_URL=${APM_SERVER_URL:-http://54.203.133.174:8200}
+      - APM_SECRET_TOKEN=${APM_SECRET_TOKEN:-okok}
+      - APM_CAPTURE_BODY=all
+      - NODE_ENV=${NODE_ENV:-production}
+    ports:
+      - "3001:3000"
+    networks:
+      - testbench-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/status?code=200"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  instance-2:
+    build: .
+    container_name: instance-2
+    environment:
+      # Instance configuration
+      - INSTANCE_ID=2
+      - INSTANCE_NAME=instance
+      - INSTANCE_BASE_URL=http://instance
+      - INSTANCE_PORT=3000
+      # Elasticsearch APM configuration
+      - APM_SERVICE_NAME=nodejs-testbench-2
+      - APM_SERVER_URL=${APM_SERVER_URL:-http://54.203.133.174:8200}
+      - APM_SECRET_TOKEN=${APM_SECRET_TOKEN:-okok}
+      - APM_CAPTURE_BODY=all
+      - NODE_ENV=${NODE_ENV:-production}
+    ports:
+      - "3002:3000"
+    networks:
+      - testbench-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/status?code=200"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  instance-3:
+    build: .
+    container_name: instance-3
+    environment:
+      # Instance configuration
+      - INSTANCE_ID=3
+      - INSTANCE_NAME=instance
+      - INSTANCE_BASE_URL=http://instance
+      - INSTANCE_PORT=3000
+      # Elasticsearch APM configuration
+      - APM_SERVICE_NAME=nodejs-testbench-3
+      - APM_SERVER_URL=${APM_SERVER_URL:-http://54.203.133.174:8200}
+      - APM_SECRET_TOKEN=${APM_SECRET_TOKEN:-okok}
+      - APM_CAPTURE_BODY=all
+      - NODE_ENV=${NODE_ENV:-production}
+    ports:
+      - "3003:3000"
+    networks:
+      - testbench-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/status?code=200"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  instance-4:
+    build: .
+    container_name: instance-4
+    environment:
+      # Instance configuration
+      - INSTANCE_ID=4
+      - INSTANCE_NAME=instance
+      - INSTANCE_BASE_URL=http://instance
+      - INSTANCE_PORT=3000
+      # Elasticsearch APM configuration
+      - APM_SERVICE_NAME=nodejs-testbench-4
+      - APM_SERVER_URL=${APM_SERVER_URL:-http://54.203.133.174:8200}
+      - APM_SECRET_TOKEN=${APM_SECRET_TOKEN:-okok}
+      - APM_CAPTURE_BODY=all
+      - NODE_ENV=${NODE_ENV:-production}
+    ports:
+      - "3004:3000"
+    networks:
+      - testbench-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/status?code=200"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  testbench-network:
+    driver: bridge
